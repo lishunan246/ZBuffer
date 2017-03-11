@@ -53,5 +53,12 @@ ApplicationWindow {
         mouseArea.onClicked: {
             Qt.quit();
         }
+        focus:true
+        Keys.onPressed: {
+        if (event.key == Qt.Key_Left) {
+            console.log("move left");
+            event.accepted = true;
+        }
+    }
     }
 }

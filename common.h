@@ -26,7 +26,13 @@ using nodeActivePolygon = nodeClassifiedPolygon;
 
 struct nodeActiveEdgePair
 {
-	double xl;//当前扫描线边对的左临界点
+	/**
+	 * \brief 当前扫描线边对的左临界点
+	 */
+	double xl;
+	/**
+	 * \brief 
+	 */
 	double dxl;//相邻扫描线交点x坐标之差
 	int dyl;//靠左的边跨越的扫描线数目
 	double xr; //当前扫描线边对的右临界点
