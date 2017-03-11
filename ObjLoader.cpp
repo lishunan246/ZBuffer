@@ -23,8 +23,8 @@ void objLoader::loadObj(QUrl url)
 	auto file = url.toLocalFile();
 	Obj o;
 	o.readFromFile(file);
-	o.translate(1, 3, 200);
-	o.scale(10, 10, 10);
+	o.translate(10, 10, 0);
+	o.scale(40, 40, 40);
 	//image_provider->insertImage(url.fileName(), image);
 	auto&& vface = o.getObj();
 	constructDS(vface);
@@ -333,6 +333,7 @@ void objLoader::activeEdgeTableUpdate(int y)
 			{
 				it->xr += it->dxr;
 			}
+			++it;
 		}
 	}
 }
