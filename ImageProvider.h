@@ -1,13 +1,14 @@
 #pragma once
 
 #include <QQuickImageProvider>
-#include <QMap>
+#include <QImage>
+
 class ImageProvider: public QQuickImageProvider
 {
 public:
-	ImageProvider():QQuickImageProvider(QQuickImageProvider::Image) {};
-	QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize);
-	void insertImage(const QString &id, const QImage& image);
+	ImageProvider();
+	QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
+	void setPixel(int x, int y,const QColor& color);
 private:
-	QMap<QString, QImage> image_map;
+	QImage buffer;
 };

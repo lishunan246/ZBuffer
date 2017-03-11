@@ -17,7 +17,7 @@ find_package(Qt5 COMPONENTS Quick Core Network)
 
 qt5_add_resources(RESOURCES qml.qrc)
 
-add_executable( ZBuffer main.cpp ObjLoader.cpp Obj.cpp ImageProvider.cpp common.cpp ${RESOURCES})
+add_executable( ZBuffer main.cpp ObjLoader.cpp ObjLoader.h Obj.cpp Obj.h ImageProvider.cpp ImageProvider.h common.cpp common.h ${RESOURCES})
 
 qt5_use_modules(ZBuffer Quick Core Network)
 

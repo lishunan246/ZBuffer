@@ -21,9 +21,9 @@ ApplicationWindow {
             // var array=str.split('/')
             // var name = array[array.length-1]
 
-            // var source = "image://ip/"+name
+            var source = "image://ip/"+"12"
             // console.log(source)
-            // form.imageToShow.source=source
+            form.imageToShow.source=source
         }
         onRejected: {
             console.log("Canceled")
