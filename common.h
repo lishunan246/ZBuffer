@@ -1,5 +1,5 @@
 #pragma once
-#include "triple.h"
+
 #include <vector>
 #include <QColor>
 
@@ -43,7 +43,7 @@ struct Point{
 	double z;
 } ;
 
-Point roundVertex(Triple<double> v);
+Point roundVertex(std::vector<double> v);
 
 QColor getPolygonColor(std::vector<double> coffs);
 

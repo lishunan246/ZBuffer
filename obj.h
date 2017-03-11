@@ -1,18 +1,16 @@
 #pragma once
+
 #include <vector>
 #include <QString>
-
 #include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
-
-#include <triple.h>
 
 using namespace boost::numeric::ublas;
 
 class Obj
 {
 public:
-	using Faces = std::vector<std::vector<Triple<double>>>;
+	using Face = std::vector<std::vector<double>>;
+	using Faces = std::vector<Face>;
 
 	std::vector<matrix<double>> vVertex;
 	double m_offsetX, m_offsetY, m_offset;

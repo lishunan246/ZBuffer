@@ -1,7 +1,7 @@
 #include <algorithm>
-
 #include <QFile>
 #include <ObjLoader.h>
+
 #include <common.h>
 
 
@@ -44,7 +44,7 @@ void objLoader::constructDS(Obj::Faces& vfaces)
 		if (std::abs(coffs[2]) < 1e-8)
 			continue;
 
-		auto polygon_maxy = std::max(0, static_cast<int>(face[0].y));
+		auto polygon_maxy = std::max(0, static_cast<int>(face[0][1]));
 		auto polygon_miny(polygon_maxy);
 
 		for (int i = 0; i < face.size(); ++i)
@@ -90,18 +90,28 @@ void objLoader::constructDS(Obj::Faces& vfaces)
 	}
 }
 
-std::vector<double> objLoader::solveFaceCoffs(std::vector<Triple<double>> f)
+std::vector<double> objLoader::solveFaceCoffs(const Obj::Face& f)
 {
+	std::vector <vector<double >> vv;
+	for(auto&& p:f)
+	{
+		vector<double> v(p.size());
+		for(int i=0;i<p.size();++i)
+		{
+			v(i) = p[i];
+		}
+		vv.push_back(v);
+	}
 	std::vector<double> coffs(4);
 	//solve the coefficient of the plane specified by icoords and store the answer in coffs
-	Triple<double> vec1;
-	vec1 = f[2] - f[1];
-	Triple<double> vec2;
-	vec2 = f[0] - f[1];
+	//Triple<double> vec1;
+	auto vec1 = vv[2] - vv[1];
+	//Triple<double> vec2;
+	auto vec2 = vv[0] - vv[1];
 	//计算系数
-	coffs[0] = vec1.y * vec2.z - vec1.z * vec2.y;
-	coffs[1] = vec1.z * vec2.x - vec1.x * vec2.z;
-	coffs[2] = vec1.x * vec2.y - vec1.y * vec2.x;
+	coffs[0] = vec1[1] * vec2[2] - vec1[2] * vec2[1];
+	coffs[1] = vec1[2] * vec2[0] - vec1[0] * vec2[2];
+	coffs[2] = vec1[0] * vec2[1] - vec1[1] * vec2[0];
 	//系数归一
 	float coffs_abssum = abs(coffs[0]) + abs(coffs[1]) + abs(coffs[2]);
 	//_ASSERT(coffs_abssum != 0.0);
@@ -116,7 +126,7 @@ std::vector<double> objLoader::solveFaceCoffs(std::vector<Triple<double>> f)
 	coffs[1] = coffs[1] / coffs_abssum;
 	coffs[2] = coffs[2] / coffs_abssum;
 	//计算截距
-	coffs[3] = 0.0 - coffs[0] * f[0].x - coffs[1] * f[0].y - coffs[2] * f[0].z;
+	coffs[3] = 0.0 - coffs[0] * f[0][0] - coffs[1] * f[0][1] - coffs[2] * f[0][2];
 	return coffs;
 }
 

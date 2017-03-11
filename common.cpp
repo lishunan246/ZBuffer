@@ -1,11 +1,11 @@
 #include "common.h"
 
-Point roundVertex(Triple<double> v)
+Point roundVertex(std::vector<double> v)
 {//计算浮点顶点v的最近邻整点p
 	Point p;
-	p.x = v.x + ((v.x < 0) ? -0.5 : 0.5);
-	p.y = v.y + ((v.y < 0) ? -0.5 : 0.5);
-	p.z = v.z;
+	p.x = v[0] + ((v[0] < 0) ? -0.5 : 0.5);
+	p.y = v[1] + ((v[1] < 0) ? -0.5 : 0.5);
+	p.z = v[2];
 	return p;
 }
 

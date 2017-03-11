@@ -138,12 +138,11 @@ Obj::Faces& Obj::getObj()
 	{
 		for(int j=0;j<ifaces[i].size();++j)
 		{
-			std::vector<Triple<double>> vec;
+			Face vec;
 			for(auto&& t:ifaces[i])
 			{
 				auto v = vVertex[t];
-				Triple<double> tri(v(0, 0), v(0, 1), v(0, 2));
-				vec.push_back(tri);
+				vec.push_back({ v(0, 0), v(0, 1), v(0, 2) });
 			}
 			vfs[i] = vec;
 		}

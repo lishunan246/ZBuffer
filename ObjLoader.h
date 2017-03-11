@@ -21,7 +21,7 @@ public:
 
 	Q_INVOKABLE void loadObj(QUrl url);
 	void constructDS(Obj::Faces& vfaces);
-	std::vector<double> solveFaceCoffs(std::vector<Triple<double>> f);
+	std::vector<double> solveFaceCoffs(const Obj::Face& f);
 
 	QColor g_renderColor;
 	QColor g_bgColor;
