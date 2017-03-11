@@ -4,8 +4,8 @@ import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.0
 ApplicationWindow {
     visible: true
-    width: 640
-    height: 480
+    width: 1024
+    height: 768
     title: qsTr("Zbuffer")
 
     FileDialog {

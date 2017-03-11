@@ -1,6 +1,6 @@
 #include "common.h"
 
-Point roundVertex(std::vector<double> v)
+Point roundVertex(const std::vector<double>& v)
 {//计算浮点顶点v的最近邻整点p
 	Point p;
 	p.x = v[0] + ((v[0] < 0) ? -0.5 : 0.5);
@@ -9,14 +9,15 @@ Point roundVertex(std::vector<double> v)
 	return p;
 }
 
-QColor getPolygonColor(std::vector<double> coffs)
+QColor getPolygonColor(const std::vector<double>& coffs)
 {
+	auto t(coffs);
 	//根据平面法向量与z轴（不分正反向）的夹角
 	//夹角由小到大，颜色由明到暗
-	if (coffs[0] < 0) coffs[0] = 0 - coffs[0];
-	if (coffs[1] < 0) coffs[1] = 0 - coffs[1];
-	if (coffs[2] < 0) coffs[2] = 0 - coffs[2];
-	double costheta = coffs[2] / sqrt(coffs[0] + coffs[1] + coffs[2]);
+	if (t[0] < 0) t[0] = 0 - t[0];
+	if (t[1] < 0) t[1] = 0 - t[1];
+	if (t[2] < 0) t[2] = 0 - t[2];
+	double costheta = t[2] / sqrt(t[0] + t[1] + t[2]);
 	return QColor(255 * costheta, 255 * costheta, 255 * costheta);
 }
 

@@ -3,17 +3,16 @@
 
 ImageProvider::ImageProvider(): QQuickImageProvider(QQuickImageProvider::Image)
 {
-	buffer = QImage(Config::getInstance().width, Config::getInstance().height,QImage::Format_RGB888);
-	buffer.fill(QColor(0,0,0));
+	buffer = QImage(Config::getInstance().width, Config::getInstance().height, QImage::Format_RGB888);
+	buffer.fill(QColor(0, 0, 0));
 }
 
-QImage ImageProvider::requestImage(const QString& id, class QSize* size, const class QSize& requestedSize)
+QImage ImageProvider::requestImage(const QString&, class QSize*, const class QSize&)
 {
 	return buffer;
 }
 
-void ImageProvider::setPixel(int x, int y,const QColor& color)
+void ImageProvider::setPixel(int x, int y, const QColor& color)
 {
 	buffer.setPixelColor(x, y, color);
 }
-
