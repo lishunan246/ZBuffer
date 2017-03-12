@@ -11,13 +11,13 @@ public:
 	using Face = std::vector<std::vector<double>>;
 	using Faces = std::vector<Face>;
 
-	std::vector<matrix<double>> vertices;
-	std::vector<std::vector<int>> indices_of_faces;
-	Faces vertices_of_faces;
-
-	void readFromFile(QString path);
+	void readFromFile(const QString& path);
 	void translate(double x, double y, double z);
 	void scale(double x, double y, double z);
 	void rotateY(double theta);
-	Faces& getObj();;
+	Faces& getFaces();
+private:
+	std::vector<matrix<double>> vertices;
+	std::vector<std::vector<int>> indices_of_faces;
+	Faces vertices_of_faces;
 };

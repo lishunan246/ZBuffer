@@ -18,8 +18,8 @@ ObjLoader::~ObjLoader()
 void ObjLoader::refresh()
 {
 	image_provider->reset();
-	auto&& vface = o.getObj();
-	constructDS(vface);
+	auto&& vface = o.getFaces();
+	tableInit(vface);
 	scan();
 }
 
@@ -58,14 +58,14 @@ void ObjLoader::moveRight()
 	refresh();
 }
 
-void ObjLoader::constructDS(Obj::Faces& vfaces)
+void ObjLoader::tableInit(Obj::Faces& vfaces)
 {
-	int g_ploygon_id = 0;
+	int currentID = 0;
 	edgeTable.assign(Config::getInstance().height, std::list<Edge>());
 	polygonTable.assign(Config::getInstance().height, std::list<Polygon>());
 	for (auto&& face:vfaces)
 	{
-		++g_ploygon_id;
+		++currentID;
 		auto&& coffs = solveFaceCoffs(face);
 
 		if (std::abs(coffs[2]) < 1e-8)
@@ -91,7 +91,7 @@ void ObjLoader::constructDS(Obj::Faces& vfaces)
 			ce.x = a.x;
 			ce.dx = (b.x - a.x + 0.0) / (a.y - b.y);
 			ce.dy = a.y - b.y + 1;
-			ce.id = g_ploygon_id;
+			ce.id = currentID;
 			ce.used = false;
 			if (a.y >= edgeTable.size())
 				continue;
@@ -108,7 +108,7 @@ void ObjLoader::constructDS(Obj::Faces& vfaces)
 		cp.c = coffs[2];
 		cp.d = coffs[3];
 		cp.dy = polygon_maxy - polygon_miny + 1;
-		cp.id = g_ploygon_id;
+		cp.id = currentID;
 		cp.color = getPolygonColor(coffs);
 		if (polygon_maxy >= polygonTable.size())
 			continue;
@@ -160,7 +160,7 @@ void ObjLoader::scan()
 	{
 		zbuffer.clear();
 		zbuffer.resize(Config::getInstance().width);
-		activeNewPolygon(y);
+		activeNewPolygons(y);
 		depthUpdate(y);
 		activeEdgeTableUpdate(y);
 		activePolygonTableUpdate();
@@ -182,7 +182,7 @@ std::vector<Edge> ObjLoader::findEdge(int id, int y)
 	return edges;
 }
 
-void ObjLoader::activeNewPolygon(int y)
+void ObjLoader::activeNewPolygons(int y)
 {
 	auto&& polygon_list = polygonTable[y];
 

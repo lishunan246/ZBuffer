@@ -4,9 +4,10 @@
 #include <QString>
 
 #include "obj.h"
+#include "common.h"
 
 
-void Obj::readFromFile(QString path)
+void Obj::readFromFile(const QString& path)
 {
 	QFile file(path);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -53,6 +54,7 @@ void Obj::readFromFile(QString path)
 
 		line = in.readLine();
 	}
+	Config::getInstance().setFaceCount(indices_of_faces.size());
 }
 
 void Obj::translate(double x, double y, double z)
@@ -92,7 +94,7 @@ void Obj::rotateY(double theta)
 }
 
 
-Obj::Faces& Obj::getObj()
+Obj::Faces& Obj::getFaces()
 {
 	vertices_of_faces.resize(indices_of_faces.size());
 	for(int i=0;i<vertices_of_faces.size();++i)

@@ -40,7 +40,21 @@ void Config::setUrl(const QString& a)
 	}
 }
 
+void Config::setFaceCount(int a)
+{
+	if(a!=m_faceCount)
+	{
+		m_faceCount = a;
+		emit faceCountChanged();
+	}
+}
+
 QString Config::url() const
 {
 	return m_url;
+}
+
+int Config::faceCount() const
+{
+	return m_faceCount;
 }

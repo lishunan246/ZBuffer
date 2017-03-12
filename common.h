@@ -59,6 +59,7 @@ class Config:public QObject
 {
 	Q_OBJECT
 	Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
+	Q_PROPERTY(int faceCount READ faceCount WRITE setFaceCount NOTIFY faceCountChanged)
 public:
 	static Config& getInstance();
 	Config(const Config&) = delete;
@@ -70,12 +71,15 @@ public:
 	int height = 600;
 	QColor backgroundColor = QColor(0, 0, 0);
 	void setUrl(const QString& a);
-
+	void setFaceCount(int a);
 	QString url() const;
+	int faceCount() const;
 
 	signals :
 	void urlChanged();
+	void faceCountChanged();
 private:
 	Config() = default;
 	QString m_url;
+	int m_faceCount = 0;
 };

@@ -2,8 +2,7 @@ import QtQuick 2.5
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.0
-
-import "GetRandomName.js" as Rd
+import QtQuick.Layouts 1.0
 
 ApplicationWindow {
     visible: true
@@ -52,31 +51,38 @@ ApplicationWindow {
         }
         focus:true
         Keys.onPressed: {
-        if (event.key == Qt.Key_Left) {
-            console.log("move left");
-            obj_loader.moveLeft();
-            form.imageToShow.refresh();
-            event.accepted = true;
-        }
-        else if(event.key==Qt.Key_Up)
-        {
-            console.log("move up");
-            obj_loader.moveUp();
-            form.imageToShow.refresh();
-            event.accepted=true;
-        }
-        else if(event.key==Qt.Key_Right)
-        {
-            obj_loader.moveRight();
-            form.imageToShow.refresh();
-            event.accepted=true;
-        }
-        else if(event.key==Qt.Key_Down)
-        {
-            obj_loader.moveDown();
-            form.imageToShow.refresh();
-            event.accepted=true;
+            if (event.key == Qt.Key_Left) {
+                console.log("move left");
+                obj_loader.moveLeft();
+                form.imageToShow.refresh();
+                event.accepted = true;
+            }
+            else if(event.key==Qt.Key_Up)
+            {
+                console.log("move up");
+                obj_loader.moveUp();
+                form.imageToShow.refresh();
+                event.accepted=true;
+            }
+            else if(event.key==Qt.Key_Right)
+            {
+                obj_loader.moveRight();
+                form.imageToShow.refresh();
+                event.accepted=true;
+            }
+            else if(event.key==Qt.Key_Down)
+            {
+                obj_loader.moveDown();
+                form.imageToShow.refresh();
+                event.accepted=true;
+            }
         }
     }
+
+    statusBar: StatusBar {
+        RowLayout {
+            anchors.fill: parent
+            Label { text: "面数："+config.faceCount }
+        }
     }
 }

@@ -22,11 +22,11 @@ public:
 	Q_INVOKABLE void moveRight();
 	Q_INVOKABLE void moveLeft();
 private:
-	void constructDS(Obj::Faces& vfaces);
+	void tableInit(Obj::Faces& vfaces);
 	std::vector<double> solveFaceCoffs(const Obj::Face& f);
 	void scan();
 	std::vector<Edge> findEdge(int id,int y);
-	void activeNewPolygon(int y);
+	void activeNewPolygons(int y);
 	void setPixel(int x, int y,const QColor& color);
 	void depthUpdate(int y);
 	void activeEdgeTableUpdate(int y);
