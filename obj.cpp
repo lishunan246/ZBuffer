@@ -14,8 +14,9 @@ void Obj::readFromFile(QString path)
 
 	QTextStream in(&file);
 	QString line = in.readLine();
-
-	vVertex.push_back(matrix<double>(1, 4, 0));
+	vertices.clear();
+	indices_of_faces.clear();
+	vertices.push_back(matrix<double>(1, 4, 0));
 	while (!line.isNull())
 	{
 		auto string_list = line.split(" ");
@@ -29,7 +30,7 @@ void Obj::readFromFile(QString path)
 				vertex(0,i-1) = t.toDouble();
 			}
 
-			vVertex.push_back(vertex);
+			vertices.push_back(vertex);
 		}
 		else if (string_list.front() == "f")
 		{
@@ -43,7 +44,7 @@ void Obj::readFromFile(QString path)
 				}
 				ele.push_back(str.toInt());
 			}
-			ifaces.push_back(ele);
+			indices_of_faces.push_back(ele);
 		}
 		else
 		{
@@ -65,7 +66,7 @@ void Obj::translate(double x, double y, double z)
 	translate_matrix(3, 1) = y;
 	translate_matrix(3, 2) = z;
 	
-	for(auto&& v:vVertex)
+	for(auto&& v:vertices)
 	{
 		v = prod(v, translate_matrix);
 	}
@@ -79,7 +80,7 @@ void Obj::scale(double x, double y, double z)
 	translate_matrix(2, 2) = z;
 	translate_matrix(3, 3) = 1;
 
-	for (auto&& v : vVertex)
+	for (auto&& v : vertices)
 	{
 		v = prod(v, translate_matrix);
 	}
@@ -93,19 +94,19 @@ void Obj::rotateY(double theta)
 
 Obj::Faces& Obj::getObj()
 {
-	vfs.resize(ifaces.size());
-	for(int i=0;i<vfs.size();++i)
+	vertices_of_faces.resize(indices_of_faces.size());
+	for(int i=0;i<vertices_of_faces.size();++i)
 	{
-		for(int j=0;j<ifaces[i].size();++j)
+		for(int j=0;j<indices_of_faces[i].size();++j)
 		{
 			Face vec;
-			for(auto&& t:ifaces[i])
+			for(auto&& t:indices_of_faces[i])
 			{
-				auto v = vVertex[t];
+				auto v = vertices[t];
 				vec.push_back({ v(0, 0), v(0, 1), v(0, 2) });
 			}
-			vfs[i] = vec;
+			vertices_of_faces[i] = vec;
 		}
 	}
-	return vfs;
+	return vertices_of_faces;
 }

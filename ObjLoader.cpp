@@ -18,6 +18,14 @@ ObjLoader::~ObjLoader()
 {
 }
 
+void ObjLoader::refresh()
+{
+	image_provider->reset();
+	auto&& vface = o.getObj();
+	constructDS(vface);
+	zbuffer();
+}
+
 void ObjLoader::loadObj(QUrl url)
 {
 	Config::getInstance().setUrl(url.toLocalFile());
@@ -26,9 +34,31 @@ void ObjLoader::loadObj(QUrl url)
 	o.translate(10, 10, 0);
 	o.scale(40, 40, 40);
 	//image_provider->insertImage(url.fileName(), image);
-	auto&& vface = o.getObj();
-	constructDS(vface);
-	zbuffer();
+	refresh();
+}
+
+void ObjLoader::moveUp()
+{
+	o.translate(0, 10, 0);
+	refresh();
+}
+
+void ObjLoader::moveLeft()
+{
+	o.translate(-10, 0, 0);
+	refresh();
+}
+
+void ObjLoader::moveDown()
+{
+	o.translate(0, -10, 0);
+	refresh();
+}
+
+void ObjLoader::moveRight()
+{
+	o.translate(10, 0, 0);
+	refresh();
 }
 
 void ObjLoader::constructDS(Obj::Faces& vfaces)
@@ -117,9 +147,6 @@ std::vector<double> ObjLoader::solveFaceCoffs(const Obj::Face& f)
 	//_ASSERT(coffs_abssum != 0.0);
 	if (coffs_abssum == 0.0)
 	{
-#ifdef DEBUGGER
-		cout << "normal vector is 0." << endl;
-#endif
 		coffs_abssum = 1.0;
 	}
 	coffs[0] = coffs[0] / coffs_abssum;
@@ -169,7 +196,7 @@ void ObjLoader::activeNewPolygon(int y)
 		auto polygon = *it;
 		auto&& edges = findEdge(polygon.id, y);
 
-		if(edges.size()==0)
+		if(edges.size()<2)
 		{
 			tActivePolygon.erase(it++);
 			continue;
@@ -272,6 +299,7 @@ void ObjLoader::activeEdgeTableUpdate(int y)
 			if (edges.empty())
 			{
 				tActiveEdgePair.erase(it++);
+				continue;
 			}
 			else
 			{
@@ -310,6 +338,7 @@ void ObjLoader::activeEdgeTableUpdate(int y)
 				if (edges.empty())
 				{
 					tActiveEdgePair.erase(it++);
+					continue;
 				}
 				else
 				{
@@ -330,6 +359,7 @@ void ObjLoader::activeEdgeTableUpdate(int y)
 				if (edges.empty())
 				{
 					tActiveEdgePair.erase(it++);
+					continue;
 				}
 				else
 				{

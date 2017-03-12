@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <QString>
 #include <boost/numeric/ublas/matrix.hpp>
 
 using namespace boost::numeric::ublas;
@@ -12,10 +11,9 @@ public:
 	using Face = std::vector<std::vector<double>>;
 	using Faces = std::vector<Face>;
 
-	std::vector<matrix<double>> vVertex;
-
-	Faces vfs;
-	std::vector<std::vector<int>> ifaces;
+	std::vector<matrix<double>> vertices;
+	std::vector<std::vector<int>> indices_of_faces;
+	Faces vertices_of_faces;
 
 	void readFromFile(QString path);
 	void translate(double x, double y, double z);

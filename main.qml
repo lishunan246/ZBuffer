@@ -2,6 +2,9 @@ import QtQuick 2.5
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Dialogs 1.0
+
+import "GetRandomName.js" as Rd
+
 ApplicationWindow {
     visible: true
     width: 1024
@@ -17,13 +20,7 @@ ApplicationWindow {
             console.log("You chose: " + url)
             
             obj_loader.loadObj(url)
-            // var str =url.toString()
-            // var array=str.split('/')
-            // var name = array[array.length-1]
-
-            var source = "image://ip/"+"12"
-            // console.log(source)
-            form.imageToShow.source=source
+            form.imageToShow.refresh();
         }
         onRejected: {
             console.log("Canceled")
@@ -57,7 +54,28 @@ ApplicationWindow {
         Keys.onPressed: {
         if (event.key == Qt.Key_Left) {
             console.log("move left");
+            obj_loader.moveLeft();
+            form.imageToShow.refresh();
             event.accepted = true;
+        }
+        else if(event.key==Qt.Key_Up)
+        {
+            console.log("move up");
+            obj_loader.moveUp();
+            form.imageToShow.refresh();
+            event.accepted=true;
+        }
+        else if(event.key==Qt.Key_Right)
+        {
+            obj_loader.moveRight();
+            form.imageToShow.refresh();
+            event.accepted=true;
+        }
+        else if(event.key==Qt.Key_Down)
+        {
+            obj_loader.moveDown();
+            form.imageToShow.refresh();
+            event.accepted=true;
         }
     }
     }

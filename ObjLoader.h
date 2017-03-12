@@ -18,8 +18,13 @@ class ObjLoader :
 public:
 	ObjLoader(ImageProvider* image_provider);
 	virtual ~ObjLoader();
+	void refresh();
 
 	Q_INVOKABLE void loadObj(QUrl url);
+	Q_INVOKABLE void moveUp();
+	Q_INVOKABLE void moveDown();
+	Q_INVOKABLE void moveRight();
+	Q_INVOKABLE void moveLeft();
 	void constructDS(Obj::Faces& vfaces);
 	std::vector<double> solveFaceCoffs(const Obj::Face& f);
 

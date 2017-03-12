@@ -14,5 +14,18 @@ Rectangle {
     Image {
         id:imageToShow
         anchors.fill: parent
+        cache: false
+        source: "image://ip/11"
+        function refresh(){
+
+            var t=source;
+
+            source="";
+
+            source=t;
+
+            console.log(t+" refreshed.");
+
+        }
     }
 }
