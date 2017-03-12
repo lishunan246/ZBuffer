@@ -1,28 +1,28 @@
 #include <algorithm>
 #include <QFile>
-#include <ObjLoader.h>
 
-#include <common.h>
+#include "ObjLoader.h"
+#include "common.h"
 
 
-objLoader::objLoader(ImageProvider* image_provider)
+ObjLoader::ObjLoader(ImageProvider* image_provider)
 {
-	objLoader::image_provider = image_provider;
+	ObjLoader::image_provider = image_provider;
 	g_bgColor = QColor(0, 0, 0);
 	g_renderColor = QColor(255, 255, 255);
 	g_zbuffer.resize(Config::getInstance().width);
 }
 
 
-objLoader::~objLoader()
+ObjLoader::~ObjLoader()
 {
 }
 
-void objLoader::loadObj(QUrl url)
+void ObjLoader::loadObj(QUrl url)
 {
-	auto file = url.toLocalFile();
-	Obj o;
-	o.readFromFile(file);
+	Config::getInstance().setUrl(url.toLocalFile());
+
+	o.readFromFile(Config::getInstance().url());
 	o.translate(10, 10, 0);
 	o.scale(40, 40, 40);
 	//image_provider->insertImage(url.fileName(), image);
@@ -31,7 +31,7 @@ void objLoader::loadObj(QUrl url)
 	zbuffer();
 }
 
-void objLoader::constructDS(Obj::Faces& vfaces)
+void ObjLoader::constructDS(Obj::Faces& vfaces)
 {
 	int g_ploygon_id = 0;
 	tClassifiedEdge.assign(Config::getInstance().height, std::list<nodeClassifiedEdge>());
@@ -90,7 +90,7 @@ void objLoader::constructDS(Obj::Faces& vfaces)
 	}
 }
 
-std::vector<double> objLoader::solveFaceCoffs(const Obj::Face& f)
+std::vector<double> ObjLoader::solveFaceCoffs(const Obj::Face& f)
 {
 	std::vector <vector<double >> vv;
 	for(auto&& p:f)
@@ -130,7 +130,7 @@ std::vector<double> objLoader::solveFaceCoffs(const Obj::Face& f)
 	return coffs;
 }
 
-void objLoader::zbuffer()
+void ObjLoader::zbuffer()
 {
 	for (int y = Config::getInstance().height - 1; y >= 0; --y)
 	{
@@ -143,7 +143,7 @@ void objLoader::zbuffer()
 	}
 }
 
-std::vector<nodeClassifiedEdge> objLoader::findEdge(int id, int y)
+std::vector<nodeClassifiedEdge> ObjLoader::findEdge(int id, int y)
 {
 	std::vector<nodeClassifiedEdge> edges;
 
@@ -158,7 +158,7 @@ std::vector<nodeClassifiedEdge> objLoader::findEdge(int id, int y)
 	return edges;
 }
 
-void objLoader::activeNewPolygon(int y)
+void ObjLoader::activeNewPolygon(int y)
 {
 	auto&& polygon_list = tClassifiedPolygon[y];
 
@@ -219,12 +219,12 @@ void objLoader::activeNewPolygon(int y)
 	}
 }
 
-void objLoader::setPixel(int x, int y, const QColor& color)
+void ObjLoader::setPixel(int x, int y, const QColor& color)
 {
 	image_provider->setPixel(x, y, color);
 }
 
-void objLoader::depthUpdate(int y)
+void ObjLoader::depthUpdate(int y)
 {
 	for (auto&& aep:tActiveEdgePair)
 	{
@@ -259,7 +259,7 @@ void objLoader::depthUpdate(int y)
 	}
 }
 
-void objLoader::activeEdgeTableUpdate(int y)
+void ObjLoader::activeEdgeTableUpdate(int y)
 {
 	auto it = tActiveEdgePair.begin();
 	while (it != tActiveEdgePair.end())
@@ -348,7 +348,7 @@ void objLoader::activeEdgeTableUpdate(int y)
 	}
 }
 
-void objLoader::activePolygonTableUpdate()
+void ObjLoader::activePolygonTableUpdate()
 {
 	auto it = tActivePolygon.begin();
 	while (it != tActivePolygon.end())

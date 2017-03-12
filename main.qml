@@ -6,7 +6,7 @@ ApplicationWindow {
     visible: true
     width: 1024
     height: 768
-    title: qsTr("Zbuffer")
+    title: config.url?config.url:qsTr("Zbuffer")
 
     FileDialog {
         id: fileDialog

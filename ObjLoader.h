@@ -8,16 +8,16 @@
 
 #include "ImageProvider.h"
 #include "obj.h"
-#include <common.h>
+#include "common.h"
 
 
-class objLoader :
+class ObjLoader :
 	public QObject
 {
 	Q_OBJECT
 public:
-	objLoader(ImageProvider* image_provider);
-	virtual ~objLoader();
+	ObjLoader(ImageProvider* image_provider);
+	virtual ~ObjLoader();
 
 	Q_INVOKABLE void loadObj(QUrl url);
 	void constructDS(Obj::Faces& vfaces);
@@ -40,5 +40,6 @@ public:
 	void activePolygonTableUpdate();
 private:
 	ImageProvider* image_provider;
+	Obj o;
 };
 

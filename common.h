@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <QColor>
+#include <QObject>
 
 
 struct nodeClassifiedPolygon
@@ -56,14 +57,39 @@ Point roundVertex(const std::vector<double>& v);
 
 QColor getPolygonColor(const std::vector<double>& coffs);
 
-class Config
+class Config:public QObject
 {
+	Q_OBJECT
+	Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
 public:
 	static Config& getInstance();
 	Config(const Config&) = delete;
 	Config& operator=(const Config&) = delete;
+
+	virtual ~Config()
+	{
+	}
+
 	int width = 800;
 	int height = 600;
+
+	void setUrl(const QString& a)
+	{
+		if (a != m_url)
+		{
+			m_url = a;
+			emit urlChanged();
+		}
+	}
+
+	QString url() const
+	{
+		return m_url;
+	}
+
+	signals :
+	void urlChanged();
 private:
 	Config() = default;
+	QString m_url;
 };
