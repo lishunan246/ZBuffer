@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <QFile>
 
 #include "ObjLoader.h"
 #include "common.h"
@@ -8,9 +7,7 @@
 ObjLoader::ObjLoader(ImageProvider* image_provider)
 {
 	ObjLoader::image_provider = image_provider;
-	g_bgColor = QColor(0, 0, 0);
-	g_renderColor = QColor(255, 255, 255);
-	g_zbuffer.resize(Config::getInstance().width);
+	zbuffer.resize(Config::getInstance().width);
 }
 
 
@@ -23,7 +20,7 @@ void ObjLoader::refresh()
 	image_provider->reset();
 	auto&& vface = o.getObj();
 	constructDS(vface);
-	zbuffer();
+	scan();
 }
 
 void ObjLoader::loadObj(QUrl url)
@@ -64,8 +61,8 @@ void ObjLoader::moveRight()
 void ObjLoader::constructDS(Obj::Faces& vfaces)
 {
 	int g_ploygon_id = 0;
-	tClassifiedEdge.assign(Config::getInstance().height, std::list<nodeClassifiedEdge>());
-	tClassifiedPolygon.assign(Config::getInstance().height, std::list<nodeClassifiedPolygon>());
+	edgeTable.assign(Config::getInstance().height, std::list<Edge>());
+	polygonTable.assign(Config::getInstance().height, std::list<Polygon>());
 	for (auto&& face:vfaces)
 	{
 		++g_ploygon_id;
@@ -90,21 +87,21 @@ void ObjLoader::constructDS(Obj::Faces& vfaces)
 			if (std::abs(a.y - b.y) < 1e-8)
 				continue;
 
-			nodeClassifiedEdge ce;
+			Edge ce;
 			ce.x = a.x;
 			ce.dx = (b.x - a.x + 0.0) / (a.y - b.y);
 			ce.dy = a.y - b.y + 1;
 			ce.id = g_ploygon_id;
 			ce.used = false;
-			if (a.y >= tClassifiedEdge.size())
+			if (a.y >= edgeTable.size())
 				continue;
 
-			tClassifiedEdge[a.y].push_back(std::move(ce));
+			edgeTable[a.y].push_back(std::move(ce));
 
 			polygon_maxy = std::max(polygon_maxy, a.y);
 			polygon_miny = std::min(polygon_miny, b.y);
 		}
-		nodeClassifiedPolygon cp;
+		Polygon cp;
 
 		cp.a = coffs[0];
 		cp.b = coffs[1];
@@ -113,10 +110,10 @@ void ObjLoader::constructDS(Obj::Faces& vfaces)
 		cp.dy = polygon_maxy - polygon_miny + 1;
 		cp.id = g_ploygon_id;
 		cp.color = getPolygonColor(coffs);
-		if (polygon_maxy >= tClassifiedPolygon.size())
+		if (polygon_maxy >= polygonTable.size())
 			continue;
 
-		tClassifiedPolygon[polygon_maxy].push_back(std::move(cp));
+		polygonTable[polygon_maxy].push_back(std::move(cp));
 	}
 }
 
@@ -157,12 +154,12 @@ std::vector<double> ObjLoader::solveFaceCoffs(const Obj::Face& f)
 	return coffs;
 }
 
-void ObjLoader::zbuffer()
+void ObjLoader::scan()
 {
 	for (int y = Config::getInstance().height - 1; y >= 0; --y)
 	{
-		g_zbuffer.clear();
-		g_zbuffer.resize(Config::getInstance().width);
+		zbuffer.clear();
+		zbuffer.resize(Config::getInstance().width);
 		activeNewPolygon(y);
 		depthUpdate(y);
 		activeEdgeTableUpdate(y);
@@ -170,11 +167,11 @@ void ObjLoader::zbuffer()
 	}
 }
 
-std::vector<nodeClassifiedEdge> ObjLoader::findEdge(int id, int y)
+std::vector<Edge> ObjLoader::findEdge(int id, int y)
 {
-	std::vector<nodeClassifiedEdge> edges;
+	std::vector<Edge> edges;
 
-	for (auto&& edge : tClassifiedEdge[y])
+	for (auto&& edge : edgeTable[y])
 	{
 		if (!edge.used && edge.id == id)
 		{
@@ -187,18 +184,18 @@ std::vector<nodeClassifiedEdge> ObjLoader::findEdge(int id, int y)
 
 void ObjLoader::activeNewPolygon(int y)
 {
-	auto&& polygon_list = tClassifiedPolygon[y];
+	auto&& polygon_list = polygonTable[y];
 
-	tActivePolygon.assign(polygon_list.cbegin(), polygon_list.cend());
-	auto it = tActivePolygon.begin();
-	while (it!=tActivePolygon.end())
+	activePolygonTable.assign(polygon_list.cbegin(), polygon_list.cend());
+	auto it = activePolygonTable.begin();
+	while (it!=activePolygonTable.end())
 	{
 		auto polygon = *it;
 		auto&& edges = findEdge(polygon.id, y);
 
 		if(edges.size()<2)
 		{
-			tActivePolygon.erase(it++);
+			activePolygonTable.erase(it++);
 			continue;
 		}
 		//assert(edges.size() == 2);
@@ -209,7 +206,7 @@ void ObjLoader::activeNewPolygon(int y)
 			std::swap(l, r);
 		}
 
-		nodeActiveEdgePair aep;
+		ActiveEdgePair aep;
 		aep.xl = l.x;
 		aep.dxl = l.dx;
 		aep.dyl = l.dy;
@@ -231,17 +228,17 @@ void ObjLoader::activeNewPolygon(int y)
 		}
 		while (x < aep.xr)
 		{
-			if (x < g_zbuffer.size() && zx > g_zbuffer[x])
+			if (x < zbuffer.size() && zx > zbuffer[x])
 			{
-				g_zbuffer[x] = zx;
-				setPixel(x, y, g_bgColor);
+				zbuffer[x] = zx;
+				setPixel(x, y, Config::getInstance().backgroundColor);
 			}
 			zx += aep.dzx;
 			++x;
 		}
 
 
-		tActiveEdgePair.push_back(std::move(aep));
+		activeEdgeTable.push_back(std::move(aep));
 		++it;
 	}
 }
@@ -253,7 +250,7 @@ void ObjLoader::setPixel(int x, int y, const QColor& color)
 
 void ObjLoader::depthUpdate(int y)
 {
-	for (auto&& aep:tActiveEdgePair)
+	for (auto&& aep:activeEdgeTable)
 	{
 		auto zx = aep.zl;
 		auto x = aep.xl;
@@ -264,20 +261,20 @@ void ObjLoader::depthUpdate(int y)
 			++x;
 		}
 
-		if (x < g_zbuffer.size() && zx > g_zbuffer[x])
+		if (x < zbuffer.size() && zx > zbuffer[x])
 		{
-			g_zbuffer[x] = zx;
-			setPixel(x, y, g_bgColor);
+			zbuffer[x] = zx;
+			setPixel(x, y, Config::getInstance().backgroundColor);
 		}
 
 		zx += aep.dzx;
 		++x;
 
-		while (x < g_zbuffer.size() && x < aep.xr)
+		while (x < zbuffer.size() && x < aep.xr)
 		{
-			if (zx > g_zbuffer[x])
+			if (zx > zbuffer[x])
 			{
-				g_zbuffer[x] = zx;
+				zbuffer[x] = zx;
 				setPixel(x, y, aep.color);
 			}
 			zx += aep.dzx;
@@ -288,8 +285,8 @@ void ObjLoader::depthUpdate(int y)
 
 void ObjLoader::activeEdgeTableUpdate(int y)
 {
-	auto it = tActiveEdgePair.begin();
-	while (it != tActiveEdgePair.end())
+	auto it = activeEdgeTable.begin();
+	while (it != activeEdgeTable.end())
 	{
 		it->dyl--;
 		it->dyr--;
@@ -298,37 +295,34 @@ void ObjLoader::activeEdgeTableUpdate(int y)
 			auto&& edges = findEdge(it->id, y);
 			if (edges.empty())
 			{
-				tActiveEdgePair.erase(it++);
+				activeEdgeTable.erase(it++);
 				continue;
 			}
-			else
+			assert(edges.size() == 2);
+			auto&& l = edges[0];
+			auto&& r = edges[1];
+
+			if (l.x > r.x || (l.x == r.x && l.dx > r.dx))
 			{
-				assert(edges.size() == 2);
-				auto&& l = edges[0];
-				auto&& r = edges[1];
-
-				if (l.x > r.x || (l.x == r.x && l.dx > r.dx))
-				{
-					std::swap(l, r);
-				}
-
-				auto ap = std::find_if(tActivePolygon.cbegin(), tActivePolygon.cend(), [id=it->id](const nodeActivePolygon& t)
-				                       {
-					                       return t.id == id;
-				                       });
-
-				it->xl = l.x;
-				it->dxl = l.dx;
-				it->dyl = l.dy;
-				it->xr = r.x;
-				it->dxr = r.dx;
-				it->dyr = r.dy;
-				it->zl = (-ap->d - l.x * ap->a - y * ap->b) / ap->c;
-				it->dzx = (-ap->a) / ap->c;
-				it->dzy = ap->b / ap->c;
-
-				++it;
+				std::swap(l, r);
 			}
+
+			auto ap = std::find_if(activePolygonTable.cbegin(), activePolygonTable.cend(), [id=it->id](const Polygon& t)
+			                       {
+				                       return t.id == id;
+			                       });
+
+			it->xl = l.x;
+			it->dxl = l.dx;
+			it->dyl = l.dy;
+			it->xr = r.x;
+			it->dxr = r.dx;
+			it->dyr = r.dy;
+			it->zl = (-ap->d - l.x * ap->a - y * ap->b) / ap->c;
+			it->dzx = (-ap->a) / ap->c;
+			it->dzy = ap->b / ap->c;
+
+			++it;
 		}
 		else
 		{
@@ -337,16 +331,13 @@ void ObjLoader::activeEdgeTableUpdate(int y)
 				auto&& edges = findEdge(it->id, y);
 				if (edges.empty())
 				{
-					tActiveEdgePair.erase(it++);
+					activeEdgeTable.erase(it++);
 					continue;
 				}
-				else
-				{
-					auto&& l = edges.front();
-					it->xl = l.x;
-					it->dxl = l.dx;
-					it->dyl = l.dy;
-				}
+				auto&& l = edges.front();
+				it->xl = l.x;
+				it->dxl = l.dx;
+				it->dyl = l.dy;
 			}
 			else
 			{
@@ -358,16 +349,13 @@ void ObjLoader::activeEdgeTableUpdate(int y)
 				auto&& edges = findEdge(it->id, y);
 				if (edges.empty())
 				{
-					tActiveEdgePair.erase(it++);
+					activeEdgeTable.erase(it++);
 					continue;
 				}
-				else
-				{
-					auto&& l = edges.front();
-					it->xr = l.x;
-					it->dxr = l.dx;
-					it->dyr = l.dy;
-				}
+				auto&& l = edges.front();
+				it->xr = l.x;
+				it->dxr = l.dx;
+				it->dyr = l.dy;
 			}
 			else
 			{
@@ -380,12 +368,12 @@ void ObjLoader::activeEdgeTableUpdate(int y)
 
 void ObjLoader::activePolygonTableUpdate()
 {
-	auto it = tActivePolygon.begin();
-	while (it != tActivePolygon.end())
+	auto it = activePolygonTable.begin();
+	while (it != activePolygonTable.end())
 	{
 		it->dy--;
 		if (it->dy < 0)
-			tActivePolygon.erase(it++);
+			activePolygonTable.erase(it++);
 		else
 			++it;
 	}

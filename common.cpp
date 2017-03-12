@@ -26,3 +26,21 @@ Config& Config::getInstance()
 	static Config c;
 	return c;
 }
+
+Config::~Config()
+{
+}
+
+void Config::setUrl(const QString& a)
+{
+	if (a != m_url)
+	{
+		m_url = a;
+		emit urlChanged();
+	}
+}
+
+QString Config::url() const
+{
+	return m_url;
+}

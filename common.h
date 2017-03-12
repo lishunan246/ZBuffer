@@ -5,7 +5,7 @@
 #include <QObject>
 
 
-struct nodeClassifiedPolygon
+struct Polygon
 {
 	double a, b, c, d;//多边形系数
 	int id;//多边形编号
@@ -13,7 +13,7 @@ struct nodeClassifiedPolygon
 	QColor color;//多边形颜色
 };
 
-struct nodeClassifiedEdge
+struct Edge
 {
 	double x;//边上端点的x坐标
 
@@ -23,9 +23,7 @@ struct nodeClassifiedEdge
 	bool used;//该边是否已经处理过
 };
 
-using nodeActivePolygon = nodeClassifiedPolygon;
-
-struct nodeActiveEdgePair
+struct ActiveEdgePair
 {
 	/**
 	 * \brief 当前扫描线边对的左临界点
@@ -66,26 +64,14 @@ public:
 	Config(const Config&) = delete;
 	Config& operator=(const Config&) = delete;
 
-	virtual ~Config()
-	{
-	}
+	virtual ~Config();
 
 	int width = 800;
 	int height = 600;
+	QColor backgroundColor = QColor(0, 0, 0);
+	void setUrl(const QString& a);
 
-	void setUrl(const QString& a)
-	{
-		if (a != m_url)
-		{
-			m_url = a;
-			emit urlChanged();
-		}
-	}
-
-	QString url() const
-	{
-		return m_url;
-	}
+	QString url() const;
 
 	signals :
 	void urlChanged();
