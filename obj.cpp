@@ -6,28 +6,18 @@
 #include "obj.h"
 
 
-extern int width;
-extern int height;
-
 void Obj::readFromFile(QString path)
 {
 	QFile file(path);
-	objpath = path;
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 		return;
 
 	QTextStream in(&file);
 	QString line = in.readLine();
 
-	double min_x = std::numeric_limits<double>::max();
-	double min_y = min_x;
-	double max_x = std::numeric_limits<double>::min();
-	double max_y = std::numeric_limits<double>::min();
-
 	vVertex.push_back(matrix<double>(1, 4, 0));
 	while (!line.isNull())
 	{
-		//std::cout << line.toStdString() << std::endl;
 		auto string_list = line.split(" ");
 
 		if (string_list.front() == "v")
@@ -38,10 +28,6 @@ void Obj::readFromFile(QString path)
 				auto t = string_list[i];
 				vertex(0,i-1) = t.toDouble();
 			}
-			min_x = std::min(min_x, vertex(0,0));
-			max_x = std::max(max_x, vertex(0, 0));
-			min_y = std::min(min_y, vertex(0, 1));
-			max_y = std::max(max_y, vertex(0, 1));
 
 			vVertex.push_back(vertex);
 		}
@@ -66,32 +52,6 @@ void Obj::readFromFile(QString path)
 
 		line = in.readLine();
 	}
-
-	auto spanx = max_x - min_x;
-	auto spany = max_y - min_y;
-
-	if (spanx <= 1 || spany <= 1)
-		m_scaleFactor = 1000;
-
-	else if (spanx < 5 || spany < 5)
-		m_scaleFactor = 80;
-
-	else if (spanx < 10 || spany < 10)
-		m_scaleFactor = 40;
-
-	else if (spanx < 20 || spany < 20)
-		m_scaleFactor = 20;
-
-	else if (spanx < 40 || spany < 40)
-		m_scaleFactor = 10;
-
-	else
-		m_scaleFactor = 1;
-
-	m_offsetX = (m_winWidth >> 1) - ((max_x + min_x) * m_scaleFactor / 2);//abs(min_x) + 0.5;
-	m_offsetY = (m_winHeight >> 1) - ((max_y + min_y) * m_scaleFactor / 2);
-	nVertex = vVertex.size() - 1;
-	nFace = ifaces.size();
 }
 
 void Obj::translate(double x, double y, double z)
@@ -133,7 +93,7 @@ void Obj::rotateY(double theta)
 
 Obj::Faces& Obj::getObj()
 {
-	vfs.resize(nFace);
+	vfs.resize(ifaces.size());
 	for(int i=0;i<vfs.size();++i)
 	{
 		for(int j=0;j<ifaces[i].size();++j)
