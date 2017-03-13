@@ -1,47 +1,101 @@
 #pragma once
 
 #include <vector>
-#include <QColor>
-#include <QObject>
+#include "Config.h"
 
-
+/**
+ * \brief 多边形
+ */
 struct Polygon
 {
-	double a, b, c, d;//多边形系数
-	int id;//多边形编号
-	int dy;//跨越的扫描线数目
-	QColor color;//多边形颜色
+	/**
+	* \brief 多边形所在平面的方程系数 ax+by+cz+d=0;
+	*/
+	double a, b, c, d;
+	/**
+	 * \brief 多边形的编号
+	 */
+	int id;
+	/**
+	 * \brief 多变形跨越的扫描线数目
+	 */
+	int dy;
+	/**
+	 * \brief 多边形的颜色
+	 */
+	QColor color;
 };
 
 struct Edge
 {
-	double x;//边上端点的x坐标
+	/**
+	 * \brief 边的上顶点的x坐标
+	 */
+	double x;
 
-	double dx;//扫描线向下移动一次时x的增量
-	int dy;//边跨越的扫描线数目
-	int id;//边所在所变形的编号
-	bool used;//该边是否已经处理过
+	/**
+	 * \brief 相邻两条扫描线交点的x坐标差
+	 */
+	double dx;
+	/**
+	 * \brief 边跨越的扫描线数目
+	 */
+	int dy;
+	/**
+	 * \brief 边所属多边形的编号
+	 */
+	int id;
+
+	bool used;
 };
 
+/**
+ * \brief 交点对
+ */
 struct ActiveEdgePair
 {
 	/**
-	 * \brief 当前扫描线边对的左临界点
+	 * \brief 左交点的x坐标
 	 */
 	double xl;
 	/**
-	 * \brief 
+	 * \brief (左交点边上)两相邻扫描线交点的x坐标之差
 	 */
-	double dxl;//相邻扫描线交点x坐标之差
-	int dyl;//靠左的边跨越的扫描线数目
-	double xr; //当前扫描线边对的右临界点
-	double dxr;//扫描线向下移动一次时右边的xr的增量
-	int dyr;//靠右的边跨越的扫描线数目
-	double zl;//当前扫描线下左边的深度
-	double dzx;//向右扫描一个像素时，深度的增量
-	double dzy;//向下移动扫描线时深度的增量
-	int id;//边对所在多边形的编号
-	QColor color;//颜色
+	double dxl;
+	/**
+	 * \brief 以和左边交点所在边相交的扫描线为初值,以后每处理一条扫描线减1
+	 */
+	int dyl;
+	/**
+	 * \brief 右交点的x坐标
+	 */
+	double xr;
+	/**
+	 * \brief (右交点边上)两相邻扫描线交点的x坐标之差
+	 */
+	double dxr;
+	/**
+	 * \brief 以和右边交点所在边相交的扫描线为初值,以后每处理一条扫描线减1
+	 */
+	int dyr;
+	/**
+	 * \brief 左交点处多边形所在平面的深度值
+	 */
+	double zl;
+	/**
+	 * \brief 沿扫描线向右走过一个像素时,多边形所在平面的深度增量. 对于平面方程.dzx=-a/c (c!=0);
+	 */
+	double dzx;
+	/**
+	 * \brief 沿y方向向下移过一根扫描线时，多边形所在平面的深度增量。
+	 * 对于平面方程， dzy=b/c (c!=0)
+	 */
+	double dzy;
+	/**
+	 * \brief 交点对所在多边形的编号 
+	 */
+	int id;
+	QColor color;
 };
 
 struct Point
@@ -52,38 +106,4 @@ struct Point
 
 Point roundVertex(const std::vector<double>& v);
 
-
 QColor getPolygonColor(const std::vector<double>& coffs);
-
-class Config:public QObject
-{
-	Q_OBJECT
-	Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
-	Q_PROPERTY(int faceCount READ faceCount WRITE setFaceCount NOTIFY faceCountChanged)
-	Q_PROPERTY(int time READ time WRITE setTime NOTIFY timeChanged)
-public:
-	static Config& getInstance();
-	Config(const Config&) = delete;
-	Config& operator=(const Config&) = delete;
-
-	virtual ~Config();
-
-	int width = 800;
-	int height = 600;
-	QColor backgroundColor = QColor(0, 0, 0);
-	void setUrl(const QString& a);
-	void setFaceCount(int a);
-	void setTime(int a);
-	QString url() const;
-	int faceCount() const;
-	int time() const;
-	signals :
-	void urlChanged();
-	void faceCountChanged();
-	void timeChanged();
-private:
-	Config() = default;
-	QString m_url;
-	int m_faceCount = 0;
-	int m_time = 0;
-};
