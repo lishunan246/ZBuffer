@@ -100,6 +100,17 @@ void ObjLoader::rotateRight()
 	refresh();
 }
 
+void ObjLoader::zoomIn()
+{
+	auto x = 1.0*(o.x_max + o.x_min) / 2;
+	auto y = 1.0*(o.y_max + o.y_min) / 2;
+	auto z = 1.0*(o.z_max + o.z_min) / 2;
+	o.translate(-x, -y, -z);
+	o.scale(1.2, 1.2, 1.2);
+	o.translate(x, y, z);
+	refresh();
+}
+
 void ObjLoader::moveDown()
 {
 	o.translate(0, -10, 0);
@@ -109,6 +120,17 @@ void ObjLoader::moveDown()
 void ObjLoader::moveRight()
 {
 	o.translate(10, 0, 0);
+	refresh();
+}
+
+void ObjLoader::zoomOut()
+{
+	auto x = 1.0*(o.x_max + o.x_min) / 2;
+	auto y = 1.0*(o.y_max + o.y_min) / 2;
+	auto z = 1.0*(o.z_max + o.z_min) / 2;
+	o.translate(-x, -y, -z);
+	o.scale(0.8, 0.8, 0.8);
+	o.translate(x, y, z);
 	refresh();
 }
 

@@ -91,13 +91,24 @@ ApplicationWindow {
             else if(event.key==Qt.Key_W)
             {
                 obj_loader.rotateUp();
-                console.log("up");
                 form.imageToShow.refresh();
                 event.accepted=true;
             }
             else if(event.key==Qt.Key_S)
             {
                 obj_loader.rotateDown();
+                form.imageToShow.refresh();
+                event.accepted=true;
+            }
+            else if(event.key==Qt.Key_Z)
+            {
+                obj_loader.zoomIn();
+                form.imageToShow.refresh();
+                event.accepted=true;
+            }
+            else if(event.key==Qt.Key_X)
+            {
+                obj_loader.zoomOut();
                 form.imageToShow.refresh();
                 event.accepted=true;
             }

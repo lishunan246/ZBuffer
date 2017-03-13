@@ -25,6 +25,8 @@ public:
 	Q_INVOKABLE void rotateDown();
 	Q_INVOKABLE void rotateLeft();
 	Q_INVOKABLE void rotateRight();
+	Q_INVOKABLE void zoomIn();
+	Q_INVOKABLE void zoomOut();
 private:
 	/**
 	 * \brief 建立分类的多边形表和边表
