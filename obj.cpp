@@ -2,6 +2,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QString>
+#include <limits>
 
 #include "obj.h"
 #include "common.h"
@@ -18,6 +19,10 @@ void Obj::readFromFile(const QString& path)
 	vertices.clear();
 	indices_of_faces.clear();
 	vertices.push_back(matrix<double>(1, 4, 0));
+
+	x_max = y_max = std::numeric_limits<double>::min();
+	x_min = y_min = std::numeric_limits<double>::max();
+
 	while (!line.isNull())
 	{
 		auto string_list = line.split(" ");
@@ -30,6 +35,10 @@ void Obj::readFromFile(const QString& path)
 				auto t = string_list[i];
 				vertex(0,i-1) = t.toDouble();
 			}
+			x_max = std::max(x_max, vertex(0, 0));
+			x_min = std::min(x_min, vertex(0, 0));
+			y_max = std::max(y_max, vertex(0, 1));
+			y_min = std::min(y_min, vertex(0, 1));
 
 			vertices.push_back(vertex);
 		}
@@ -49,7 +58,7 @@ void Obj::readFromFile(const QString& path)
 		}
 		else
 		{
-			std::cout << "can not read line: " << line.toStdString() << std::endl;
+			//std::cout << "can not read line: " << line.toStdString() << std::endl;
 		}
 
 		line = in.readLine();
@@ -59,6 +68,10 @@ void Obj::readFromFile(const QString& path)
 
 void Obj::translate(double x, double y, double z)
 {
+	x_max += x;
+	y_max += y;
+	x_min += x;
+	y_min += y;
 	matrix<double> translate_matrix(4, 4,0);
 	translate_matrix(0, 0) = 1;
 	translate_matrix(1, 1) = 1;
@@ -76,6 +89,10 @@ void Obj::translate(double x, double y, double z)
 
 void Obj::scale(double x, double y, double z)
 {
+	x_max *= x;
+	y_max *= y;
+	x_min *= x;
+	y_min *= y;
 	matrix<double> translate_matrix(4, 4, 0);
 	translate_matrix(0, 0) = x;
 	translate_matrix(1, 1) = y;

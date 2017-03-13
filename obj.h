@@ -16,6 +16,7 @@ public:
 	void scale(double x, double y, double z);
 	void rotateY(double theta);
 	Faces& getFaces();
+	double x_max, x_min, y_max, y_min;
 private:
 	std::vector<matrix<double>> vertices;
 	std::vector<std::vector<int>> indices_of_faces;

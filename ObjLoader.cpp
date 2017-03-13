@@ -33,9 +33,13 @@ void ObjLoader::loadObj(QUrl url)
 	Config::getInstance().setUrl(url.toLocalFile());
 
 	o.readFromFile(Config::getInstance().url());
-	o.translate(10, 10, 0);
-	o.scale(40, 40, 40);
-	//image_provider->insertImage(url.fileName(), image);
+	auto s = Config::getInstance().height / (2 * (o.y_max - o.y_min));
+	o.scale(s, s, s);
+	auto x = 1.0 * Config::getInstance().width / 2 - 1.0 * (o.x_max + o.x_min) / 2;
+	auto y = 1.0 * Config::getInstance().height / 2 - 1.0 * (o.y_max + o.y_min) / 2;
+
+	o.translate(x, y, 0);
+
 	refresh();
 }
 
@@ -124,11 +128,11 @@ void ObjLoader::tableInit(Obj::Faces& vfaces)
 
 std::vector<double> ObjLoader::solveFaceCoffs(const Obj::Face& f)
 {
-	std::vector <vector<double >> vv;
-	for(auto&& p:f)
+	std::vector<vector<double>> vv;
+	for (auto&& p:f)
 	{
 		vector<double> v(p.size());
-		for(int i=0;i<p.size();++i)
+		for (int i = 0; i < p.size(); ++i)
 		{
 			v(i) = p[i];
 		}
@@ -193,12 +197,12 @@ void ObjLoader::activeNewPolygons(int y)
 
 	activePolygonTable.assign(polygon_list.cbegin(), polygon_list.cend());
 	auto it = activePolygonTable.begin();
-	while (it!=activePolygonTable.end())
+	while (it != activePolygonTable.end())
 	{
 		auto polygon = *it;
 		auto&& edges = findEdge(polygon.id, y);
 
-		if(edges.size()<2)
+		if (edges.size() < 2)
 		{
 			activePolygonTable.erase(it++);
 			continue;
