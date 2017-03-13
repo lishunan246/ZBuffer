@@ -38,8 +38,8 @@ void ObjLoader::loadObj(QUrl url)
 	o.scale(s, s, s);
 	auto x = 1.0 * Config::getInstance().width / 2 - 1.0 * (o.x_max + o.x_min) / 2;
 	auto y = 1.0 * Config::getInstance().height / 2 - 1.0 * (o.y_max + o.y_min) / 2;
-
-	o.translate(x, y, 0);
+	auto z = 1.0*(o.z_max + o.z_min) / 2;
+	o.translate(x, y, -z+1000);
 
 	refresh();
 }
@@ -53,6 +53,50 @@ void ObjLoader::moveUp()
 void ObjLoader::moveLeft()
 {
 	o.translate(-10, 0, 0);
+	refresh();
+}
+
+void ObjLoader::rotateUp()
+{
+	auto x = 1.0*(o.x_max + o.x_min) / 2;
+	auto y = 1.0*(o.y_max + o.y_min) / 2;
+	auto z = 1.0*(o.z_max + o.z_min) / 2;
+	o.translate(-x, -y, -z);
+	o.rotateX(0.1);
+	o.translate(x, y, z);
+	refresh();
+}
+
+void ObjLoader::rotateDown()
+{
+	auto x = 1.0*(o.x_max + o.x_min) / 2;
+	auto y = 1.0*(o.y_max + o.y_min) / 2;
+	auto z = 1.0*(o.z_max + o.z_min) / 2;
+	o.translate(-x, -y, -z);
+	o.rotateX(-0.1);
+	o.translate(x, y, z);
+	refresh();
+}
+
+void ObjLoader::rotateLeft()
+{
+	auto x = 1.0*(o.x_max + o.x_min) / 2;
+	auto y = 1.0*(o.y_max + o.y_min) / 2;
+	auto z = 1.0*(o.z_max + o.z_min) / 2;
+	o.translate(-x, -y, -z);
+	o.rotateY(0.1);
+	o.translate(x, y, z);
+	refresh();
+}
+
+void ObjLoader::rotateRight()
+{
+	auto x = 1.0*(o.x_max + o.x_min) / 2;
+	auto y = 1.0*(o.y_max + o.y_min) / 2;
+	auto z = 1.0*(o.z_max + o.z_min) / 2;
+	o.translate(-x, -y, -z);
+	o.rotateY(-0.1);
+	o.translate(x, y, z);
 	refresh();
 }
 
@@ -168,8 +212,8 @@ void ObjLoader::scan()
 {
 	for (currentY = (Config::getInstance().height) - 1; currentY >= 0; --currentY)
 	{
-		zbuffer.clear();
-		zbuffer.resize(Config::getInstance().width);
+		zbuffer=std::vector<double>(Config::getInstance().width,std::numeric_limits<double>::min());
+		//zbuffer.resize(Config::getInstance().width);
 		activeNewPolygons();
 		depthUpdate();
 		activeEdgeTableUpdate();

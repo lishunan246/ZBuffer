@@ -20,8 +20,8 @@ void Obj::readFromFile(const QString& path)
 	indices_of_faces.clear();
 	vertices.push_back(matrix<double>(1, 4, 0));
 
-	x_max = y_max = std::numeric_limits<double>::min();
-	x_min = y_min = std::numeric_limits<double>::max();
+	x_max = y_max =z_max= std::numeric_limits<double>::min();
+	x_min = y_min =z_min= std::numeric_limits<double>::max();
 
 	while (!line.isNull())
 	{
@@ -39,6 +39,8 @@ void Obj::readFromFile(const QString& path)
 			x_min = std::min(x_min, vertex(0, 0));
 			y_max = std::max(y_max, vertex(0, 1));
 			y_min = std::min(y_min, vertex(0, 1));
+			z_max = std::max(z_max, vertex(0, 2));
+			z_min = std::min(z_min, vertex(0, 2));
 
 			vertices.push_back(vertex);
 		}
@@ -75,6 +77,8 @@ void Obj::translate(double x, double y, double z)
 	y_max += y;
 	x_min += x;
 	y_min += y;
+	z_max += z;
+	z_min += z;
 	matrix<double> translate_matrix(4, 4, 0);
 	translate_matrix(0, 0) = 1;
 	translate_matrix(1, 1) = 1;
@@ -96,6 +100,8 @@ void Obj::scale(double x, double y, double z)
 	y_max *= y;
 	x_min *= x;
 	y_min *= y;
+	z_max *= z;
+	z_min *= z;
 	matrix<double> translate_matrix(4, 4, 0);
 	translate_matrix(0, 0) = x;
 	translate_matrix(1, 1) = y;
@@ -110,6 +116,18 @@ void Obj::scale(double x, double y, double z)
 
 void Obj::rotateY(double theta)
 {
+	matrix<double> mat(4, 4, 0);
+	mat(0, 0) = std::cos(theta);
+	mat(0, 2) = std::sin(theta);
+	mat(1, 1) = 1;
+	mat(2, 0) = -std::sin(theta);
+	mat(2, 2) = std::cos(theta);
+	mat(3, 3) = 1;
+
+	for (auto&& v : vertices)
+	{
+		v = prod(v, mat);
+	}
 }
 
 
@@ -132,4 +150,20 @@ Obj::Faces& Obj::getFaces()
 		}
 	}
 	return vertices_of_faces;
+}
+
+void Obj::rotateX(double x)
+{
+	matrix<double> mat(4, 4, 0);
+	mat(0, 0) = 1;
+	mat(1, 1) = std::cos(x);
+	mat(1, 2) = -std::sin(x);
+	mat(2, 1) = std::sin(x);
+	mat(2, 2) = std::cos(x);
+	mat(3, 3) = 1;
+
+	for (auto&& v : vertices)
+	{
+		v = prod(v, mat);
+	}
 }

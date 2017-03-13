@@ -21,6 +21,10 @@ public:
 	Q_INVOKABLE void moveDown();
 	Q_INVOKABLE void moveRight();
 	Q_INVOKABLE void moveLeft();
+	Q_INVOKABLE void rotateUp();
+	Q_INVOKABLE void rotateDown();
+	Q_INVOKABLE void rotateLeft();
+	Q_INVOKABLE void rotateRight();
 private:
 	/**
 	 * \brief 建立分类的多边形表和边表
@@ -62,7 +66,7 @@ private:
 	/**
 	 * \brief 当前扫描线的z缓冲器
 	 */
-	std::vector<float> zbuffer;
+	std::vector<double> zbuffer;
 	/**
 	 * \brief 分类边表
 	 * 根据ymax(边的上端点y坐标)将边放入相应的类中
