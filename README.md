@@ -14,7 +14,7 @@ Boost 1.63.0
 使用低版本的程序和库应该也能够编译运行
 ##编译
 
-下载Qt，并将QT_DIR添加到环境变量
+下载Qt，并将QT_DIR添加到环境变量。用本机的目录替换命令中的目录。
 
 `setx -m QTDIR D:\qt-everywhere-opensource-src-5.8.0`
 
@@ -22,7 +22,7 @@ QTDIR目录下应当有qtbase目录。
 
 把`%QTDIR%\qtbase\bin`添加到path中。
 
-下载Boost（源码即可），在添加环境变量BOOST_ROOT
+下载Boost（源码即可），并添加环境变量BOOST_ROOT。
 
 `setx -m BOOST_ROOT D:\boost_1_63_0`
 

@@ -49,6 +49,15 @@ void Config::setFaceCount(int a)
 	}
 }
 
+void Config::setTime(int a)
+{
+	if(a!=m_time)
+	{
+		m_time = a;
+		emit timeChanged();
+	}
+}
+
 QString Config::url() const
 {
 	return m_url;
@@ -57,4 +66,9 @@ QString Config::url() const
 int Config::faceCount() const
 {
 	return m_faceCount;
+}
+
+int Config::time() const
+{
+	return m_time;
 }

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <QTime>
 
 #include "ObjLoader.h"
 #include "common.h"
@@ -18,9 +19,13 @@ ObjLoader::~ObjLoader()
 void ObjLoader::refresh()
 {
 	image_provider->reset();
+	QTime timer;
+	timer.start();
 	auto&& vface = o.getFaces();
 	tableInit(vface);
 	scan();
+	auto ms = timer.elapsed();
+	Config::getInstance().setTime(ms);
 }
 
 void ObjLoader::loadObj(QUrl url)
@@ -156,7 +161,7 @@ std::vector<double> ObjLoader::solveFaceCoffs(const Obj::Face& f)
 
 void ObjLoader::scan()
 {
-	for (int y = Config::getInstance().height - 1; y >= 0; --y)
+	for (int y = (Config::getInstance().height) - 1; y >= 0; --y)
 	{
 		zbuffer.clear();
 		zbuffer.resize(Config::getInstance().width);

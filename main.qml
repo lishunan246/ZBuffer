@@ -83,6 +83,7 @@ ApplicationWindow {
         RowLayout {
             anchors.fill: parent
             Label { text: "面数："+config.faceCount }
+            Label{text:"用时："+config.time+"ms"}
         }
     }
 }
