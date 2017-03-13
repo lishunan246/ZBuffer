@@ -33,7 +33,7 @@ void Obj::readFromFile(const QString& path)
 			for (int i = 1; i < 4; ++i)
 			{
 				auto t = string_list[i];
-				vertex(0,i-1) = t.toDouble();
+				vertex(0, i - 1) = t.toDouble();
 			}
 			x_max = std::max(x_max, vertex(0, 0));
 			x_min = std::min(x_min, vertex(0, 0));
@@ -52,7 +52,10 @@ void Obj::readFromFile(const QString& path)
 				{
 					str = str.split('/')[0];
 				}
-				ele.push_back(str.toInt());
+				auto index = str.toInt();
+				if (index < 0)
+					index = vertices.size() + index;
+				ele.push_back(index);
 			}
 			indices_of_faces.push_back(ele);
 		}
@@ -72,7 +75,7 @@ void Obj::translate(double x, double y, double z)
 	y_max += y;
 	x_min += x;
 	y_min += y;
-	matrix<double> translate_matrix(4, 4,0);
+	matrix<double> translate_matrix(4, 4, 0);
 	translate_matrix(0, 0) = 1;
 	translate_matrix(1, 1) = 1;
 	translate_matrix(2, 2) = 1;
@@ -80,8 +83,8 @@ void Obj::translate(double x, double y, double z)
 	translate_matrix(3, 0) = x;
 	translate_matrix(3, 1) = y;
 	translate_matrix(3, 2) = z;
-	
-	for(auto&& v:vertices)
+
+	for (auto&& v:vertices)
 	{
 		v = prod(v, translate_matrix);
 	}
@@ -107,22 +110,23 @@ void Obj::scale(double x, double y, double z)
 
 void Obj::rotateY(double theta)
 {
-	
 }
 
 
 Obj::Faces& Obj::getFaces()
 {
 	vertices_of_faces.resize(indices_of_faces.size());
-	for(int i=0;i<vertices_of_faces.size();++i)
+	for (int i = 0; i < vertices_of_faces.size(); ++i)
 	{
-		for(int j=0;j<indices_of_faces[i].size();++j)
+		for (int j = 0; j < indices_of_faces[i].size(); ++j)
 		{
 			Face vec;
-			for(auto&& t:indices_of_faces[i])
+			for (auto&& t:indices_of_faces[i])
 			{
-				auto v = vertices[t];
-				vec.push_back({ v(0, 0), v(0, 1), v(0, 2) });
+
+					auto v = vertices[t];
+					vec.push_back({v(0, 0), v(0, 1), v(0, 2)});
+				
 			}
 			vertices_of_faces[i] = vec;
 		}

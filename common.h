@@ -100,10 +100,8 @@ struct ActiveEdgePair
 
 struct Point
 {
-	int x, y;
-	double z;
+	explicit Point(const std::vector<double>& v);
+	int x, y,z;
 };
-
-Point roundVertex(const std::vector<double>& v);
 
 QColor getPolygonColor(const std::vector<double>& coffs);

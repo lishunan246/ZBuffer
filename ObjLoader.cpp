@@ -3,6 +3,7 @@
 
 #include "ObjLoader.h"
 #include "common.h"
+#include <unordered_map>
 
 
 ObjLoader::ObjLoader(ImageProvider* image_provider)
@@ -67,48 +68,46 @@ void ObjLoader::moveRight()
 	refresh();
 }
 
-void ObjLoader::tableInit(Obj::Faces& vfaces)
+void ObjLoader::tableInit(const Obj::Faces& vfaces)
 {
-	int currentID = 0;
+	int id = 0;
 	edgeTable.assign(Config::getInstance().height, std::list<Edge>());
 	polygonTable.assign(Config::getInstance().height, std::list<Polygon>());
 	for (auto&& face:vfaces)
 	{
-		++currentID;
+		++id;
 		auto&& coffs = solveFaceCoffs(face);
 
 		if (std::abs(coffs[2]) < 1e-8)
 			continue;
 
-		auto polygon_maxy = std::max(0, static_cast<int>(face[0][1]));
-		auto polygon_miny(polygon_maxy);
-
+		auto y_max = -1;
+		auto y_min = Config::getInstance().height+1;
+		std::unordered_multimap<int,Edge> edges;
 		for (int i = 0; i < face.size(); ++i)
 		{
-			auto a = roundVertex(face[i]);
-			auto b = roundVertex(face[(i + 1) % face.size()]);
+			Point a(face[i]);
+			Point b(face[(i + 1) % face.size()]);
 			if (a.y < b.y)
 				std::swap(a, b);
 
-			if (a.y < 0)
+			if (a.y < 0||a.y>edgeTable.size())
 				continue;
 
-			if (std::abs(a.y - b.y) < 1e-8)
+			if (a.y == b.y)
 				continue;
 
 			Edge ce;
 			ce.x = a.x;
 			ce.dx = (b.x - a.x + 0.0) / (a.y - b.y);
 			ce.dy = a.y - b.y + 1;
-			ce.id = currentID;
+			ce.id = id;
 			ce.used = false;
-			if (a.y >= edgeTable.size())
-				continue;
 
-			edgeTable[a.y].push_back(std::move(ce));
+			edges.insert({ a.y,std::move(ce) });
 
-			polygon_maxy = std::max(polygon_maxy, a.y);
-			polygon_miny = std::min(polygon_miny, b.y);
+			y_max = std::max(y_max, a.y);
+			y_min = std::min(y_min, b.y);
 		}
 		Polygon cp;
 
@@ -116,17 +115,21 @@ void ObjLoader::tableInit(Obj::Faces& vfaces)
 		cp.b = coffs[1];
 		cp.c = coffs[2];
 		cp.d = coffs[3];
-		cp.dy = polygon_maxy - polygon_miny + 1;
-		cp.id = currentID;
+		cp.dy = y_max - y_min + 1;
+		cp.id = id;
 		cp.color = getPolygonColor(coffs);
-		if (polygon_maxy >= polygonTable.size())
+		if (y_max >= polygonTable.size())
 			continue;
 
-		polygonTable[polygon_maxy].push_back(std::move(cp));
+		for(auto&& p:edges)
+		{
+			edgeTable[p.first].push_back(p.second);
+		}
+		polygonTable[y_max].push_back(std::move(cp));
 	}
 }
 
-std::vector<double> ObjLoader::solveFaceCoffs(const Obj::Face& f)
+std::vector<double> ObjLoader::solveFaceCoffs(const Obj::Face& f) const
 {
 	std::vector<vector<double>> vv;
 	for (auto&& p:f)
@@ -139,39 +142,37 @@ std::vector<double> ObjLoader::solveFaceCoffs(const Obj::Face& f)
 		vv.push_back(v);
 	}
 	std::vector<double> coffs(4);
-	//solve the coefficient of the plane specified by icoords and store the answer in coffs
-	//Triple<double> vec1;
+
 	auto vec1 = vv[2] - vv[1];
-	//Triple<double> vec2;
 	auto vec2 = vv[0] - vv[1];
-	//计算系数
+
 	coffs[0] = vec1[1] * vec2[2] - vec1[2] * vec2[1];
 	coffs[1] = vec1[2] * vec2[0] - vec1[0] * vec2[2];
 	coffs[2] = vec1[0] * vec2[1] - vec1[1] * vec2[0];
-	//系数归一
-	float coffs_abssum = abs(coffs[0]) + abs(coffs[1]) + abs(coffs[2]);
-	//_ASSERT(coffs_abssum != 0.0);
+
+	auto coffs_abssum = abs(coffs[0]) + abs(coffs[1]) + abs(coffs[2]);
+
 	if (coffs_abssum == 0.0)
 	{
 		coffs_abssum = 1.0;
 	}
+
 	coffs[0] = coffs[0] / coffs_abssum;
 	coffs[1] = coffs[1] / coffs_abssum;
 	coffs[2] = coffs[2] / coffs_abssum;
-	//计算截距
 	coffs[3] = 0.0 - coffs[0] * f[0][0] - coffs[1] * f[0][1] - coffs[2] * f[0][2];
 	return coffs;
 }
 
 void ObjLoader::scan()
 {
-	for (int y = (Config::getInstance().height) - 1; y >= 0; --y)
+	for (currentY = (Config::getInstance().height) - 1; currentY >= 0; --currentY)
 	{
 		zbuffer.clear();
 		zbuffer.resize(Config::getInstance().width);
-		activeNewPolygons(y);
-		depthUpdate(y);
-		activeEdgeTableUpdate(y);
+		activeNewPolygons();
+		depthUpdate();
+		activeEdgeTableUpdate();
 		activePolygonTableUpdate();
 	}
 }
@@ -191,16 +192,16 @@ std::vector<Edge> ObjLoader::findEdge(int id, int y)
 	return edges;
 }
 
-void ObjLoader::activeNewPolygons(int y)
+void ObjLoader::activeNewPolygons()
 {
-	auto&& polygon_list = polygonTable[y];
+	auto&& polygon_list = polygonTable[currentY];
 
 	activePolygonTable.assign(polygon_list.cbegin(), polygon_list.cend());
 	auto it = activePolygonTable.begin();
 	while (it != activePolygonTable.end())
 	{
 		auto polygon = *it;
-		auto&& edges = findEdge(polygon.id, y);
+		auto&& edges = findEdge(polygon.id, currentY);
 
 		if (edges.size() < 2)
 		{
@@ -208,6 +209,7 @@ void ObjLoader::activeNewPolygons(int y)
 			continue;
 		}
 		//assert(edges.size() == 2);
+		//由于舍弃了平行的边,所以不一定能找到两条边
 		auto l = edges[0];
 		auto r = edges[1];
 		if (l.x > r.x || (l.x == r.x && l.dx > r.dx))
@@ -222,7 +224,7 @@ void ObjLoader::activeNewPolygons(int y)
 		aep.xr = r.x;
 		aep.dxr = r.dx;
 		aep.dyr = r.dy;
-		aep.zl = (-polygon.d - l.x * polygon.a - y * polygon.b) / polygon.c;
+		aep.zl = (-polygon.d - l.x * polygon.a - currentY * polygon.b) / polygon.c;
 		aep.dzx = (-polygon.a) / polygon.c;
 		aep.dzy = polygon.b / polygon.c;
 		aep.id = polygon.id;
@@ -240,26 +242,26 @@ void ObjLoader::activeNewPolygons(int y)
 			if (x < zbuffer.size() && zx > zbuffer[x])
 			{
 				zbuffer[x] = zx;
-				setPixel(x, y, Config::getInstance().backgroundColor);
+				setPixel(x, currentY, Config::getInstance().backgroundColor);
 			}
 			zx += aep.dzx;
 			++x;
 		}
 
 
-		activeEdgeTable.push_back(std::move(aep));
+		activeEdgePairTable.push_back(std::move(aep));
 		++it;
 	}
 }
 
-void ObjLoader::setPixel(int x, int y, const QColor& color)
+void ObjLoader::setPixel(int x, int y, const QColor& color) const
 {
 	image_provider->setPixel(x, y, color);
 }
 
-void ObjLoader::depthUpdate(int y)
+void ObjLoader::depthUpdate()
 {
-	for (auto&& aep:activeEdgeTable)
+	for (auto&& aep:activeEdgePairTable)
 	{
 		auto zx = aep.zl;
 		auto x = aep.xl;
@@ -273,7 +275,7 @@ void ObjLoader::depthUpdate(int y)
 		if (x < zbuffer.size() && zx > zbuffer[x])
 		{
 			zbuffer[x] = zx;
-			setPixel(x, y, Config::getInstance().backgroundColor);
+			setPixel(x, currentY, Config::getInstance().backgroundColor);
 		}
 
 		zx += aep.dzx;
@@ -284,7 +286,7 @@ void ObjLoader::depthUpdate(int y)
 			if (zx > zbuffer[x])
 			{
 				zbuffer[x] = zx;
-				setPixel(x, y, aep.color);
+				setPixel(x, currentY, aep.color);
 			}
 			zx += aep.dzx;
 			++x;
@@ -292,19 +294,19 @@ void ObjLoader::depthUpdate(int y)
 	}
 }
 
-void ObjLoader::activeEdgeTableUpdate(int y)
+void ObjLoader::activeEdgeTableUpdate()
 {
-	auto it = activeEdgeTable.begin();
-	while (it != activeEdgeTable.end())
+	auto it = activeEdgePairTable.begin();
+	while (it != activeEdgePairTable.end())
 	{
 		it->dyl--;
 		it->dyr--;
 		if (it->dyl <= 0 && it->dyr <= 0)
 		{
-			auto&& edges = findEdge(it->id, y);
+			auto&& edges = findEdge(it->id, currentY);
 			if (edges.empty())
 			{
-				activeEdgeTable.erase(it++);
+				activeEdgePairTable.erase(it++);
 				continue;
 			}
 			assert(edges.size() == 2);
@@ -327,7 +329,7 @@ void ObjLoader::activeEdgeTableUpdate(int y)
 			it->xr = r.x;
 			it->dxr = r.dx;
 			it->dyr = r.dy;
-			it->zl = (-ap->d - l.x * ap->a - y * ap->b) / ap->c;
+			it->zl = (-ap->d - l.x * ap->a - currentY * ap->b) / ap->c;
 			it->dzx = (-ap->a) / ap->c;
 			it->dzy = ap->b / ap->c;
 
@@ -337,10 +339,10 @@ void ObjLoader::activeEdgeTableUpdate(int y)
 		{
 			if (it->dyl <= 0)
 			{
-				auto&& edges = findEdge(it->id, y);
+				auto&& edges = findEdge(it->id, currentY);
 				if (edges.empty())
 				{
-					activeEdgeTable.erase(it++);
+					activeEdgePairTable.erase(it++);
 					continue;
 				}
 				auto&& l = edges.front();
@@ -355,10 +357,10 @@ void ObjLoader::activeEdgeTableUpdate(int y)
 			}
 			if (it->dyr <= 0)
 			{
-				auto&& edges = findEdge(it->id, y);
+				auto&& edges = findEdge(it->id, currentY);
 				if (edges.empty())
 				{
-					activeEdgeTable.erase(it++);
+					activeEdgePairTable.erase(it++);
 					continue;
 				}
 				auto&& l = edges.front();
