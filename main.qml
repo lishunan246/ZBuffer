@@ -1,14 +1,28 @@
 import QtQuick 2.5
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
-import QtQuick.Dialogs 1.0
+import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 
 ApplicationWindow {
     visible: true
     width: 1024
     height: 768
-    title: config.url?config.url:qsTr("Zbuffer")
+    title: config.url?config.url:qsTr("21621170 李书楠")
+
+    Dialog {
+        title: "使用说明"
+        id:help
+        
+        contentItem: Rectangle {
+            implicitWidth: 400
+            implicitHeight: 100
+            Text {
+                text: "方向键平移，wasd键旋转，zx键缩放"
+                anchors.centerIn: parent
+            }
+        }
+    }
 
     FileDialog {
         id: fileDialog
@@ -33,21 +47,21 @@ ApplicationWindow {
                 text: "Open..." 
                 onTriggered: fileDialog.open()
             }
-            MenuItem { text: "Close" }
         }
 
         Menu {
-            title: "Edit"
-            MenuItem { text: "Cut" }
-            MenuItem { text: "Copy" }
-            MenuItem { text: "Paste" }
+            title: "Help"
+            MenuItem { 
+                text: "Help" 
+                onTriggered: help.open()
+            }
         }
     }
     MainForm {
         id:form
         anchors.fill: parent
         mouseArea.onClicked: {
-            Qt.quit();
+            
         }
         focus:true
         Keys.onPressed: {
