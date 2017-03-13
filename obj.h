@@ -5,6 +5,9 @@
 
 using namespace boost::numeric::ublas;
 
+/**
+ * \brief OBJ文件的点面数据
+ */
 class Obj
 {
 public:

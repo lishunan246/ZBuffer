@@ -8,6 +8,9 @@
 #include "common.h"
 
 
+/**
+ * \brief 加载OBJ并显示,接受UI控制
+ */
 class ObjLoader :public QObject
 {
 	Q_OBJECT

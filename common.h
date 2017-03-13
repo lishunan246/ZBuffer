@@ -26,6 +26,9 @@ struct Polygon
 	QColor color;
 };
 
+/**
+ * \brief 多边形的一条边
+ */
 struct Edge
 {
 	/**
@@ -98,6 +101,9 @@ struct ActiveEdgePair
 	QColor color;
 };
 
+/**
+ * \brief 坐标为整数的点
+ */
 struct Point
 {
 	explicit Point(const std::vector<double>& v);

@@ -3,6 +3,9 @@
 #include <QQuickImageProvider>
 #include <QImage>
 
+/**
+ * \brief Í¼Ïñ»º´æ
+ */
 class ImageProvider: public QQuickImageProvider
 {
 public:

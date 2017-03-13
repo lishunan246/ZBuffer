@@ -3,6 +3,9 @@
 #include <QObject>
 #include <QColor>
 
+/**
+ * \brief 保存一些全局数据
+ */
 class Config :public QObject
 {
 	Q_OBJECT
@@ -31,7 +34,16 @@ signals:
 	void timeChanged();
 private:
 	Config() = default;
+	/**
+	 * \brief 文件地址
+	 */
 	QString m_url;
+	/**
+	 * \brief 面片数量
+	 */
 	int m_faceCount = 0;
+	/**
+	 * \brief 扫描一帧的时间(毫秒)
+	 */
 	int m_time = 0;
 };
