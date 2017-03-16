@@ -1,4 +1,7 @@
 # 编程实现扫描线z缓冲器算法
+
+21621170 李书楠
+
 ##开发环境
 
 Microsoft Windows 10 Pro 64bit
@@ -20,7 +23,7 @@ Boost 1.63.0
 
 QTDIR目录下应当有qtbase目录。
 
-把`%QTDIR%\qtbase\bin`添加到path中。
+把 `%QTDIR%\qtbase\bin` 添加到path中。
 
 下载Boost（源码即可），并添加环境变量BOOST_ROOT。
 
@@ -29,6 +32,7 @@ QTDIR目录下应当有qtbase目录。
 之后使用CMake打开源码目录，生成VS工程即可编译运行。
 
 ## 使用说明
+见下图
 
-## 数据结构
+[example](example.jpg)
 
